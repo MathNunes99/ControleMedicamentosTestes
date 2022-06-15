@@ -1,12 +1,15 @@
-﻿using ControleMedicamentos.Dominio.ModuloMedicamento;
-using FluentValidation.Results;
+﻿using ControleMedicamentos.Dominio.ModuloFuncionario;
 using System;
 using System.Collections.Generic;
+using FluentValidation.Results;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
+namespace ControleMedicamentos.Infra.BancoDados.ModuloFuncionario
 {
-    public class RepositorioMedicamentoEmBancoDados
+    public class RepositorioFuncionarioEmBancoDados
     {
         private string enderecoBanco =
             @"Data Source=(LOCALDB)\MSSQLLOCALDB;
@@ -14,35 +17,31 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
               Integrated Security=True";
 
         private const string sqlInserir =
-          @"INSERT INTO [TBMEDICAMENTO] 
+          @"INSERT INTO [TBFUNCIONARIO] 
                 (
                     [NOME],
-                    [DESCRICAO]
-                    [LOTE]
-                    [VALIDADE]
+                    [LOGIN],
+                    [SENHA]                    
 	            )
 	            VALUES
                 (
                     @NOME,
-                    @DESCRICAO
-                    @LOTE
-                    @VALIDADE
+                    @LOGIN,
+                    @SENHA                    
                 );SELECT SCOPE_IDENTITY();";
 
         private const string sqlEditar =
-           @"UPDATE [TBMEDICAMENTO]	
+           @"UPDATE [TBFUNCIONARIO]	
 		        SET
 			        [NOME] = @NOME,
-			        [DESCRICAO] = @DESCRICAO
-                    [LOTE] = @LOTE
-                    [VALIDADE] = @VALIDADE
-
+			        [LOGIN] = @LOGIN
+                    [SENHA] = @SENHA
 		        WHERE
 			        [ID] = @ID";
 
 
         private const string sqlExcluir =
-           @"DELETE FROM [TBMEDICAMENTO]			        
+           @"DELETE FROM [TBFUNCIONARIO]			        
 		        WHERE
 			        [ID] = @ID";
 
@@ -50,11 +49,10 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
           @"SELECT 
 		            [ID], 
 		            [NOME], 
-		            [DESCRICAO]
-                    [LOTE]
-                    [VALIDADE]
+		            [LOGIN]
+                    [SENHA]                    
 	            FROM 
-		            [TBMEDICAMENTO]
+		            [TBFUNCIONARIO]
 		        WHERE
                     [ID] = @ID";
 
@@ -62,17 +60,16 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
           @"SELECT 
 		            [ID], 
 		            [NOME], 
-		            [DESCRICAO]
-                    [LOTE]
-                    [VALIDADE]
+		            [LOGIN]
+                    [SENHA]                    
 	            FROM 
-		            [TBMEDICAMENTO]";
+		            [TBFUNCIONARIO]";
 
-        public ValidationResult Inserir(Medicamento medicamento)
+        public ValidationResult Inserir(Funcionario funcionario)
         {
-            var validador = new ValidadorMedicamento();
+            var validador = new ValidadorFuncionario();
 
-            var resultadoValidacao = validador.Validate(medicamento);
+            var resultadoValidacao = validador.Validate(funcionario);
 
             if (resultadoValidacao.IsValid == false)
                 return resultadoValidacao;
@@ -81,22 +78,22 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
 
             SqlCommand comandoInsercao = new SqlCommand(sqlInserir, conexaoComBanco);
 
-            ConfigurarParametrosMedicamento(medicamento, comandoInsercao);
+            ConfigurarParametrosMedicamento(funcionario, comandoInsercao);
 
             conexaoComBanco.Open();
             var id = comandoInsercao.ExecuteScalar();
-            medicamento.Id = Convert.ToInt32(id);
+            funcionario.Id = Convert.ToInt32(id);
 
             conexaoComBanco.Close();
 
             return resultadoValidacao;
         }
 
-        public ValidationResult Editar(Medicamento medicamento)
+        public ValidationResult Editar(Funcionario funcionario)
         {
-            var validador = new ValidadorMedicamento();
+            var validador = new ValidadorFuncionario();
 
-            var resultadoValidacao = validador.Validate(medicamento);
+            var resultadoValidacao = validador.Validate(funcionario);
 
             if (resultadoValidacao.IsValid == false)
                 return resultadoValidacao;
@@ -105,7 +102,7 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
 
             SqlCommand comandoEdicao = new SqlCommand(sqlEditar, conexaoComBanco);
 
-            ConfigurarParametrosMedicamento(medicamento, comandoEdicao);
+            ConfigurarParametrosMedicamento(funcionario, comandoEdicao);
 
             conexaoComBanco.Open();
             comandoEdicao.ExecuteNonQuery();
@@ -114,20 +111,20 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
             return resultadoValidacao;
         }
 
-        public void Excluir(Medicamento medicamento)
+        public void Excluir(Funcionario funcionario)
         {
             SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
 
             SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
 
-            comandoExclusao.Parameters.AddWithValue("ID", medicamento.Id);
+            comandoExclusao.Parameters.AddWithValue("ID", funcionario.Id);
 
             conexaoComBanco.Open();
             comandoExclusao.ExecuteNonQuery();
             conexaoComBanco.Close();
         }
 
-        public Medicamento SelecionarPorId(int id)
+        public Funcionario SelecionarPorId(int id)
         {
             SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
 
@@ -136,18 +133,18 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
             comandoSelecao.Parameters.AddWithValue("ID", id);
 
             conexaoComBanco.Open();
-            SqlDataReader leitorMedicamento = comandoSelecao.ExecuteReader();
+            SqlDataReader leitorFuncionario = comandoSelecao.ExecuteReader();
 
-            Medicamento medicamento = null;
-            if (leitorMedicamento.Read())
-                medicamento = ConverterParaMedicamento(leitorMedicamento);
+            Funcionario funcionario = null;
+            if (leitorFuncionario.Read())
+                funcionario = ConverterParaFuncionario(leitorFuncionario);
 
             conexaoComBanco.Close();
 
-            return medicamento;
+            return funcionario;
         }
 
-        public List<Medicamento> SelecionarTodos()
+        public List<Funcionario> SelecionarTodos()
         {
             SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
 
@@ -156,40 +153,38 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
 
             SqlDataReader leitorMedicamento = comandoSelecao.ExecuteReader();
 
-            List<Medicamento> medicamentos = new List<Medicamento>();
+            List<Funcionario> funcionarios = new List<Funcionario>();
 
             while (leitorMedicamento.Read())
-                medicamentos.Add(ConverterParaMedicamento(leitorMedicamento));
+                funcionarios.Add(ConverterParaFuncionario(leitorMedicamento));
 
             conexaoComBanco.Close();
 
-            return medicamentos;
+            return funcionarios;
         }
 
-        private void ConfigurarParametrosMedicamento(Medicamento medicamento, SqlCommand comando)
+        private void ConfigurarParametrosMedicamento(Funcionario funcionario, SqlCommand comando)
         {
-            comando.Parameters.AddWithValue("ID", medicamento.Id);
-            comando.Parameters.AddWithValue("NOME", medicamento.Nome);
-            comando.Parameters.AddWithValue("DESCRICAO", medicamento.Descricao);
-            comando.Parameters.AddWithValue("LOTE", medicamento.Lote);
-            comando.Parameters.AddWithValue("VALIDADE", medicamento.Validade);
+            comando.Parameters.AddWithValue("ID", funcionario.Id);
+            comando.Parameters.AddWithValue("NOME", funcionario.Nome);
+            comando.Parameters.AddWithValue("LOGIN", funcionario.Login);
+            comando.Parameters.AddWithValue("SENHA", funcionario.Senha);            
         }
 
-        private Medicamento ConverterParaMedicamento(SqlDataReader leitorMedicamento)
+        private Funcionario ConverterParaFuncionario(SqlDataReader leitorMedicamento)
         {
             int id = Convert.ToInt32(leitorMedicamento["ID"]);
             string nome = Convert.ToString(leitorMedicamento["NOME"]);
-            string descricao = Convert.ToString(leitorMedicamento["DESCRICAO"]);
-            string lote = Convert.ToString(leitorMedicamento["LOTE"]);
-            DateTime validade = Convert.ToDateTime(leitorMedicamento["VALIDADE"]);
+            string login = Convert.ToString(leitorMedicamento["LOGIN"]);
+            string senha = Convert.ToString(leitorMedicamento["SENHA"]);
+            
 
-            return new Medicamento()
+            return new Funcionario()
             {
                 Id = id,
                 Nome = nome,
-                Descricao = descricao,
-                Lote = lote,
-                Validade = validade
+                Login = login,
+                Senha = senha
             };
         }
     }

@@ -50,7 +50,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
             //assert
             var pacienteEncontrado = repositorio.SelecionarPorId(paciente.Id);
 
-            Assert.IsNotNull(pacienteEncontrado);
+            Assert.IsNotNull(pacienteEncontrado);            
             Assert.AreEqual(paciente, pacienteEncontrado);
         }
 
