@@ -21,5 +21,20 @@
         public string Cidade { get; set; }
         public string Estado { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            Fornecedor fornecedor = obj as Fornecedor;
+
+            if (fornecedor == null)
+                return false;
+
+            return
+                fornecedor.Id.Equals(Id) &&
+                fornecedor.Nome.Equals(Nome) &&
+                fornecedor.Telefone.Equals(Telefone);
+                fornecedor.Email.Equals(Email);
+                fornecedor.Cidade.Equals(Cidade);
+                fornecedor.Estado.Equals(Estado);
+        }
     }
 }

@@ -56,9 +56,9 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloFornecedor
           @"SELECT 
 		            [ID], 
 		            [NOME], 
-		            [TELEFONE]
-                    [EMAIL]
-                    [CIDADE]
+		            [TELEFONE],
+                    [EMAIL],
+                    [CIDADE],
                     [ESTADO]
 	            FROM 
 		            [TBFORNECEDOR]
@@ -69,9 +69,9 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloFornecedor
           @"SELECT 
 		            [ID], 
 		            [NOME], 
-		            [TELEFONE]
-                    [EMAIL]
-                    [CIDADE]
+		            [TELEFONE],
+                    [EMAIL],
+                    [CIDADE],
                     [ESTADO]
 	            FROM 
 		            [TBFORNECEDOR]";
@@ -144,11 +144,11 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloFornecedor
             comandoSelecao.Parameters.AddWithValue("ID", id);
 
             conexaoComBanco.Open();
-            SqlDataReader leitorMedicamento = comandoSelecao.ExecuteReader();
+            SqlDataReader leitorFornecedor = comandoSelecao.ExecuteReader();
 
             Fornecedor fornecedor = null;
-            if (leitorMedicamento.Read())
-                fornecedor = ConverterParaFornecedor(leitorMedicamento);
+            if (leitorFornecedor.Read())
+                fornecedor = ConverterParaFornecedor(leitorFornecedor);
 
             conexaoComBanco.Close();
 

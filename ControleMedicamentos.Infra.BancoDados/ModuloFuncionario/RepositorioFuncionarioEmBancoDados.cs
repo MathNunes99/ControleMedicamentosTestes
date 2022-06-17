@@ -34,7 +34,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloFuncionario
            @"UPDATE [TBFUNCIONARIO]	
 		        SET
 			        [NOME] = @NOME,
-			        [LOGIN] = @LOGIN
+			        [LOGIN] = @LOGIN,
                     [SENHA] = @SENHA
 		        WHERE
 			        [ID] = @ID";
@@ -49,7 +49,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloFuncionario
           @"SELECT 
 		            [ID], 
 		            [NOME], 
-		            [LOGIN]
+		            [LOGIN],
                     [SENHA]                    
 	            FROM 
 		            [TBFUNCIONARIO]
@@ -60,7 +60,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloFuncionario
           @"SELECT 
 		            [ID], 
 		            [NOME], 
-		            [LOGIN]
+		            [LOGIN],
                     [SENHA]                    
 	            FROM 
 		            [TBFUNCIONARIO]";
