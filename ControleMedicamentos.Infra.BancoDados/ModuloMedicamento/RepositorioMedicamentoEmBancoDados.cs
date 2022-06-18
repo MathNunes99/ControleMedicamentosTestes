@@ -1,4 +1,5 @@
-﻿using ControleMedicamentos.Dominio.ModuloMedicamento;
+﻿using ControleMedicamentos.Dominio.ModuloFornecedor;
+using ControleMedicamentos.Dominio.ModuloMedicamento;
 using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
@@ -17,26 +18,34 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
           @"INSERT INTO [TBMEDICAMENTO] 
                 (
                     [NOME],
-                    [DESCRICAO]
-                    [LOTE]
-                    [VALIDADE]
+                    [DESCRICAO],
+                    [LOTE],
+                    [VALIDADE],
+                    [QUANTIDADEDISPONIVEL],                    
+                    [FORNECEDOR_ID],
+                    [QUANTIDADEREQUISICAO]
 	            )
 	            VALUES
                 (
                     @NOME,
-                    @DESCRICAO
-                    @LOTE
-                    @VALIDADE
+                    @DESCRICAO,
+                    @LOTE,
+                    @VALIDADE,
+                    @QUANTIDADEDISPONIVEL,                    
+                    @FORNECEDOR_ID,
+                    @QUANTIDADEREQUISICAO
                 );SELECT SCOPE_IDENTITY();";
 
         private const string sqlEditar =
            @"UPDATE [TBMEDICAMENTO]	
 		        SET
 			        [NOME] = @NOME,
-			        [DESCRICAO] = @DESCRICAO
-                    [LOTE] = @LOTE
-                    [VALIDADE] = @VALIDADE
-
+			        [DESCRICAO] = @DESCRICAO,
+                    [LOTE] = @LOTE,
+                    [VALIDADE] = @VALIDADE,
+                    [QUANTIDADEDISPONIVEL] = @QUANTIDADEDISPONIVEL,                    
+                    [FORNECEDOR_ID] = @FORNECEDOR_ID,
+                    [QUANTIDADEREQUISICAO] = @QUANTIDADEREQUISICAO
 		        WHERE
 			        [ID] = @ID";
 
@@ -48,25 +57,46 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
 
         private const string sqlSelecionarPorId =
           @"SELECT 
-		            [ID], 
-		            [NOME], 
-		            [DESCRICAO]
-                    [LOTE]
-                    [VALIDADE]
-	            FROM 
-		            [TBMEDICAMENTO]
-		        WHERE
-                    [ID] = @ID";
+                MED.[ID],       
+                MED.[NOME],
+                MED.[DESCRICAO],
+                MED.[LOTE],             
+                MED.[VALIDADE],                    
+                MED.[QUANTIDADEDISPONIVEL],                                
+                MED.[FORNECEDOR_ID],
+                FORNE.[NOME] AS FORNECEDOR_NOME,              
+                FORNE.[TELEFONE],                    
+                FORNE.[EMAIL], 
+                FORNE.[CIDADE],
+                FORNE.[ESTADO]
+            FROM
+                [TBMEDICAMENTO] AS MED LEFT JOIN 
+                [TBFORNECEDOR] AS FORNE
+            ON
+                FORNE.ID = MED.FORNECEDOR_ID
+            WHERE 
+                MED.[ID] = @ID";
 
         private const string sqlSelecionarTodos =
           @"SELECT 
-		            [ID], 
-		            [NOME], 
-		            [DESCRICAO]
-                    [LOTE]
-                    [VALIDADE]
-	            FROM 
-		            [TBMEDICAMENTO]";
+                MED.[ID],       
+                MED.[NOME],
+                MED.[DESCRICAO],
+                MED.[LOTE],             
+                MED.[VALIDADE],                    
+                MED.[QUANTIDADEDISPONIVEL],                                
+                MED.[FORNECEDOR_ID],
+                FORNE.[NOME] AS FORNECEDOR_NOME,              
+                FORNE.[TELEFONE],                    
+                FORNE.[EMAIL], 
+                FORNE.[CIDADE],
+                FORNE.[ESTADO]
+            FROM
+                [TBMEDICAMENTO] AS MED LEFT JOIN 
+                [TBFORNECEDOR] AS FORNE
+            ON
+                FORNE.ID = MED.FORNECEDOR_ID";
+
 
         public ValidationResult Inserir(Medicamento medicamento)
         {
@@ -173,17 +203,23 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
             comando.Parameters.AddWithValue("DESCRICAO", medicamento.Descricao);
             comando.Parameters.AddWithValue("LOTE", medicamento.Lote);
             comando.Parameters.AddWithValue("VALIDADE", medicamento.Validade);
+            comando.Parameters.AddWithValue("QUANTIDADEDISPONIVEL", medicamento.QuantidadeDisponivel);            
+            comando.Parameters.AddWithValue("FORNECEDOR_ID", medicamento.Fornecedor.Id);
+            comando.Parameters.AddWithValue("QUANTIDADEREQUISICAO", medicamento.Requisicoes.Count);
+
         }
 
         private Medicamento ConverterParaMedicamento(SqlDataReader leitorMedicamento)
         {
+
+
             int id = Convert.ToInt32(leitorMedicamento["ID"]);
             string nome = Convert.ToString(leitorMedicamento["NOME"]);
             string descricao = Convert.ToString(leitorMedicamento["DESCRICAO"]);
             string lote = Convert.ToString(leitorMedicamento["LOTE"]);
             DateTime validade = Convert.ToDateTime(leitorMedicamento["VALIDADE"]);
 
-            return new Medicamento()
+            var medicamento = new Medicamento()
             {
                 Id = id,
                 Nome = nome,
@@ -191,6 +227,25 @@ namespace ControleMedicamento.Infra.BancoDados.ModuloMedicamento
                 Lote = lote,
                 Validade = validade
             };
+
+            int idFornecedor = Convert.ToInt32(leitorMedicamento["FORNECEDOR_ID"]);
+            string nomeFornecedor = Convert.ToString(leitorMedicamento["FORNECEDOR_NOME"]);
+            string telefone = Convert.ToString(leitorMedicamento["TELEFONE"]);
+            string email = Convert.ToString(leitorMedicamento["EMAIL"]);
+            string cidade = Convert.ToString(leitorMedicamento["CIDADE"]);
+            string estado = Convert.ToString(leitorMedicamento["ESTADO"]);
+
+            medicamento.Fornecedor = new Fornecedor()
+            {
+                Id = idFornecedor,
+                Nome = nomeFornecedor,
+                Telefone = telefone,
+                Email = email,
+                Cidade = cidade,
+                Estado = estado
+            };
+
+            return medicamento;
         }
     }
 }
